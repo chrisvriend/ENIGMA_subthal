@@ -187,9 +187,9 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu:/opt/matlabmc
 export MATLABCMD="/opt/matlabmcr-2014b/v84/toolbox/matlab"
 
 %files
-/usr/local/freesurfer/license.txt /opt/freesurfer-6.0.0/
-/home/chrisvriend/Downloads/test/segmentThalamicNuclei.sh /opt/freesurfer-6.0.1/bin
-/home/chrisvriend/Downloads/test/checkMCR.sh /opt/freesurfer-6.0.1/bin
+license.txt /opt/freesurfer-6.0.1/
+mainscript.sh /neurodocker/mainscript.sh
+
 
 %runscript
 /neurodocker/mainscript.sh "$@"
