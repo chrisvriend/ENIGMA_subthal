@@ -42,11 +42,11 @@ conda_installer="/tmp/miniconda.sh"
 curl -fsSL --retry 5 -o "$conda_installer" https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash "$conda_installer" -b -p /opt/miniconda-latest
 rm -f "$conda_installer"
-conda update -yq -nbase conda
+conda update -y -q -nbase conda
 conda config --system --prepend channels conda-forge
 conda config --system --set auto_update_conda false
 conda config --system --set show_channel_urls true
-sync && conda clean --all && sync
+sync && conda clean -y --all && sync
 conda create -y -q --name neuro
 conda install -y -q --name neuro \
     "python=3.7" \
@@ -55,7 +55,7 @@ conda install -y -q --name neuro \
     "pandas" \
     "seaborn" \
     "matplotlib"
-sync && conda clean --all && sync
+sync && conda clean -y --all && sync
 bash -c "source activate neuro
   pip install --no-cache-dir  \
       "ptitprince" \
