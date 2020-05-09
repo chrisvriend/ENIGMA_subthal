@@ -65,7 +65,9 @@ i=0
 for r in 8103 8104 8105 8106 8108 8110 8111 8112 8113 8116 8117 8118 8119 8120 8121 8122 8123 8126 8127 8128 8129 8130 8133 8203 8204 8205 8206 8208 8210 8211 8212 8213 8216 8217 8218 8219 8220 8221 8222 8223 8226 8227 8228 8229 8230 8233 ; do
 i=$[$i+1]
 
-prog ${i} \# nuclei processed
+printf " thalamic subnucleus:  %1d\r" ${i}
+
+#prog ${i} \# nuclei processed
 
 # define thresholds
 lthresh=$(echo " ${r} - 0.8" | bc -l)
@@ -150,8 +152,9 @@ echo " "
 echo "recombining subnuclei"
 for r in 8103 8104 8105 8106 8108 8110 8111 8112 8113 8116 8117 8118 8119 8120 8121 8122 8123 8126 8127 8128 8129 8130 8133 8203 8204 8205 8206 8208 8210 8211 8212 8213 8216 8217 8218 8219 8220 8221 8222 8223 8226 8227 8228 8229 8230 8233 ; do
 i=$[$i+1]
+printf " thalamic subnucleus:  %1d\r" ${i}
 
-prog ${i} \# nuclei processed
+#prog ${i} \# nuclei processed
 
 
 
@@ -204,5 +207,80 @@ fslmaths ${workdir}/${subj}/mri/ThalamicNuclei.${vers}.T1.FSvoxelSpace_noLMGN.ni
 -bin -mul FS_WM_mask.nii.gz -bin thalwm
 wmoverlap=$(fslstats thalwm -V | awk '{ print $1 }' )
 echo "${subj} ${wmoverlap}" > ${workdir}/${subj}/QC/${subj}_WM_overlap.txt
+
+
+# create png of slices
+
+
+cd ${workdir}/${subj}/mri/
+
+echo "creating overlay and PNG file of thalamic slices for QC"
+image_to_slice=thaloverlay
+overlay 1 0 brain.nii.gz -A ThalamicNuclei.v12.T1.FSvoxelSpace_noLMGN.nii.gz 1 12 ${image_to_slice}
+
+# find location of Center of Gravity
+
+locCfloat=$(fslstats ThalamicNuclei.v12.T1.FSvoxelSpace_noLMGN.nii.gz  -C | awk '{ print $3}')
+locC=${locCfloat%.*}
+minslice=$(echo "${locC} - 10 " | bc -l)
+maxslice=$(echo "${locC} + 13 " | bc -l)
+
+number_of_slices=$(echo "${maxslice} - ${minslice}" | bc -l)
+number_of_slices_brain=$(fslval ${image_to_slice} dim3)
+#Calculate the max spacing necessary to allow 24 slices to be cut
+let slice_increment=(${number_of_slices}+24-1)/24
+
+
+#####################################################################
+
+## Run loop to slice and stitch thalslices
+
+#####################################################################
+
+count=1
+col_count=7
+row=0
+
+#Slice the image.
+echo "processing..."
+for (( N = ${minslice}; N <= ${maxslice}; N += ${slice_increment} )); do
+  printf "slice: %1d\r" ${N}
+  FRAC=$(echo "scale=2; ${N} / ${number_of_slices_brain}" | bc -l);
+  slicer ${image_to_slice} -L -z ${FRAC} ${image_to_slice}_${count}.png;
+
+  #Add current image to a row.
+  #If you have the first image of a new row (i.e., column 7), create new row
+  if [[ $col_count == 7 ]] ; then
+    row=$(echo "${row} + 1" | bc -l);
+    mv ${image_to_slice}_${count}.png thalslices_row${row}.png
+    col_count=2;
+    just_started_a_new_row=1;
+  #Otherwise, append your image to the existing row.
+  else
+    pngappend thalslices_row${row}.png + ${image_to_slice}_${count}.png thalslices_row${row}.png
+    col_count=$(echo " ${col_count} + 1 " | bc -l);
+    just_started_a_new_row=0;
+    rm ${image_to_slice}_${count}.png
+  fi
+  count=$(echo  "${count} +1 " | bc -l);
+done
+
+#####################################################################
+
+## Stitch your rows into a single thalslices
+
+#####################################################################
+
+label=${subj}
+
+mv thalslices_row1.png thalslices-$label.png
+pngappend thalslices-$label.png - thalslices_row2.png thalslices-$label.png
+pngappend thalslices-$label.png - thalslices_row3.png thalslices-$label.png
+pngappend thalslices-$label.png - thalslices_row4.png thalslices-$label.png
+#pngappend thalslices-$label.png - thalslices_row5.png thalslices-$label.png
+#pngappend thalslices-$label.png - thalslices_row6.png thalslices-$label.png
+
+rm thalslices_row*
+mv ${workdir}/${subj}/mri/thalslices-$label.png ${workdir}/${subj}/QC/thalslices-$label.png
 
 echo "done with ${subj}"

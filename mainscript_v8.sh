@@ -17,7 +17,7 @@ export FSLOUTPUTTYPE=NIFTI_GZ
 
 # usage instructions
 Usage() {
-    echo "(C) C.Vriend - May 2020"
+    echo "(C) C.Vriend - 1/1/2020"
     echo "code written as part of ENIGMA OCD for subsegmentation of the thalamus"
     echo "script assumes that images are organized according to BIDS format"
     echo ""
@@ -27,8 +27,6 @@ Usage() {
     echo "--site name of site (self chosen)"
 
     echo "other options:"
-    echo "--subjs: txt file with subjecs to run script on"
-    echo "(default = run on all subjects in BIDSdir)"
     echo "--ext: extension of T1w image (default = nii.gz)"
     echo "--omp-nthreads: number of cores to use for each subject (default = 1)"
     echo "--nthreads: number of subjects to process simultaneously (default = 1)"
@@ -94,7 +92,6 @@ fi
 
 
 
-
 # input variable summary
 echo "input BIDS directory =" $BIDSdir
 echo "output directory / SUBJECT_DIR = $outputdir"
@@ -124,6 +121,7 @@ export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=${NCORES}
 
 cd ${BIDSdir}
 
+
 if [ ! -z ${subjs} ]; then
 
 subjects=$(cat ${subjs})
@@ -142,7 +140,7 @@ echo "script will run on ${numsubj} out of ${numsubjtot} subjects"
 echo "in ${BIDSdir}"
 
 else
-# find subject diroectories
+# find subject directories
 ls -d sub-*/ > temp.txt
 subjects=$(sed 's:/.*::' temp.txt)
 rm temp.txt
@@ -156,8 +154,25 @@ echo "running script on all "
 
 fi
 
-
+# counter
 j=0
+# set trap
+
+# set trap
+trap ctrl_c INT
+
+function ctrl_c() {
+      echo
+      echo "Ctrl-C by user"
+      echo "killing all child processes and exit"
+      echo
+      sleep 1
+      kill 0
+      exit
+}
+#trap "kill 0" EXIT
+
+# start loop
 for subj in ${subjects}; do
 
 echo ${subj}
@@ -195,8 +210,7 @@ j=$[$j+1]
 
 
 if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
-|| [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ] \
-|| [ ! -f ${outputdir}/${subj}/mri/aseg.mgz ]; then
+&& [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ]; then
 
   if [ -f ${outputdir}/${subj}/scripts/IsRunning.lh+rh ]; then
     echo "something may have gone wrong during a previous run of this script"
@@ -214,14 +228,25 @@ if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
   fi
 
 
-      if [ -d ${outputdir}/${subj} ]; then
+      if [ -d ${outputdir}/${subj} ] \
+      && [ -f ${outputdir}/${subj}/mri/orig/001.mgz ] ; then
+        echo "----------------------- "
         echo "continue previous recon-all -all"
+        echo "if the script exits with errors (within minutes) delete the output directory "
+        echo "of subject = ${subj}"
+        echo "and try again"
+        echo "----------------------- "
+        sleep 4
         (recon-all -subjid ${subj} -all -openmp ${NCORES} -subfields ; \
-        /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) &
+        /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_recon.log &
       else
+        if [ -d ${outputdir}/${subj} ]; then
+        echo "deleting previous run and restarting"
+        rm -rf ${outputdir}/${subj}
+        fi
         echo "starting recon-all -all"
         (recon-all -subjid ${subj} -i ${T1w_noneck} -all -openmp ${NCORES} -subfields ; \
-        /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) &
+        /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_recon.log &
       fi
 
 
@@ -230,7 +255,8 @@ elif [ ! -f ${outputdir}/${subj}/stats/thalamic-nuclei.lh.${vers}.T1.stats ] \
 echo "recon-all already completed"
 echo "continue to thalamus subsegmentation"
 
-(recon-all -subjid ${subj} -subfields -openmp ${NCORES} ; /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) &
+(recon-all -subjid ${subj} -subfields -openmp ${NCORES} ; \
+/neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_thalseg.log &
 
 elif [ ! -f ${outputdir}/${subj}/mri/thalwm.nii.gz ] \
 || [ ! -f ${outputdir}/${subj}/mri/thalcsf.nii.gz ] \
@@ -241,7 +267,7 @@ echo "recon-all already completed"
 echo " thalamus subsegmentation already completed"
 echo "continue with QA steps"
 
-/neurodocker/combine_subnuclei.sh ${outputdir} ${subj} &
+/neurodocker/combine_subnuclei.sh ${outputdir} ${subj} | tee ${outputdir}/${subj}_QAsteps.log &
 
 else
   echo "recon-all already completed"
@@ -335,8 +361,13 @@ cat ${subj}/QC/${subj}_WM_overlap.txt >> ${outputdir}/vol+QA/allppn_WM_overlap.t
 
 done
 
+# make webpage of thalamus subsegmentations
+echo "creating webpage of thalamic subsegmentations for visual QC"
+/neurodocker/create_webpage_thalsubs.sh ${outputdir}
+
+
+
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
-
 # run python script to extract volumes and make plots for QA
 /neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ENIGMA_thal_${site} --plotbase ENIGMA_thal_${site} --thalv v12

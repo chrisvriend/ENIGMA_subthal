@@ -12,6 +12,14 @@ Bootstrap: docker
 From: centos:7
 
 %post
+mkdir -p /neurodocker
+
+mv /mainscript_v6.sh /neurodocker/mainscript.sh
+mv /combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
+mv /extract_vols_plot.py /neurodocker/extract_vols_plot.py
+mv /create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh
+
+
 export ND_ENTRYPOINT="/neurodocker/mainscript.sh"
 yum install -y -q \
     bzip2 \
@@ -55,6 +63,7 @@ conda install -y -q --name neuro \
     "pandas" \
     "seaborn" \
     "matplotlib"
+
 sync && conda clean -y --all && sync
 bash -c "source activate neuro
   pip install --no-cache-dir  \
@@ -99,6 +108,7 @@ curl -fsSL --retry 5 https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.0.
 #sed -i '$isource "/opt/freesurfer7/SetUpFreeSurfer.sh"' "$ND_ENTRYPOINT"
 # modify recon-all to only subsegment the thalamus
 sed -i 's/set scrlist = (segmentHA_T1.sh segmentThalamicNuclei.sh segmentBS.sh)/set scrlist =  (segmentThalamicNuclei.sh)/g' /opt/freesurfer7/bin/recon-all
+mv /license.txt /opt/freesurfer7/license.txt
 
 
 
@@ -162,6 +172,7 @@ chmod u+x /neurodocker/combine_subnuclei.sh
 chmod u+x /neurodocker/extract_vols_plot.py
 chmod u+x /neurodocker/create_webpage_thalsubs.sh
 
+
 echo '{
 \n  "pkg_manager": "yum",
 \n  "instructions": [
@@ -206,12 +217,11 @@ export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages
 
 
 %files
-license.txt /opt/freesurfer7/
-mainscript_v8.sh /neurodocker/mainscript.sh
-combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
-extract_vols_plot.py /neurodocker/extract_vols_plot.py
-create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh
-
+license.txt
+mainscript_v8.sh
+combine_subnuclei_v3.sh
+extract_vols_plot.py
+create_webpage_thalsubs.sh
 
 %runscript
 /neurodocker/mainscript.sh "$@"
