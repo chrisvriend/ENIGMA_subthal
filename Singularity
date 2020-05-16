@@ -207,7 +207,7 @@ export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages
 
 %files
 license.txt /opt/freesurfer7/
-mainscript_v8.sh /neurodocker/mainscript.sh
+mainscript_v9.sh /neurodocker/mainscript.sh
 combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
 extract_vols_plot.py /neurodocker/extract_vols_plot.py
 create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh

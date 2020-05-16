@@ -17,24 +17,34 @@ export FSLOUTPUTTYPE=NIFTI_GZ
 
 # usage instructions
 Usage() {
+    cat <<EOF
+
     echo "(C) C.Vriend - 1/1/2020"
     echo "code written as part of ENIGMA OCD for subsegmentation of the thalamus"
     echo "script assumes that images are organized according to BIDS format"
     echo ""
-    echo "Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> [options] ..."
+    echo "Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ..."
     echo "--bidsdir /path/to/inputfiles"
     echo "--outdir /path/to/output directory"
     echo "--site name of site (self chosen)"
+    echo ""
+    echo ""
+    echo "--group: extract and plot volumes for entire group for QA and stats "
+    echo ""
 
     echo "other options:"
+    echo "--subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)"
+    echo " "
     echo "--ext: extension of T1w image (default = nii.gz)"
     echo "--omp-nthreads: number of cores to use for each subject (default = 1)"
     echo "--nthreads: number of subjects to process simultaneously (default = 1)"
     echo ""
+
+EOF
     exit 1
 }
 
-[ "$1" = "" ] && Usage
+[ _$1 = _ ] && Usage
 
 #parse default option arguments
 ext=nii.gz
@@ -45,7 +55,7 @@ NSUBJ=1
 # different versions of Thalamic subnuclei exists: v10 and v12.
 vers=v12
 
-while [ "$1" != "" ]; do
+while [ _$1 != _ ] ; do
 	case "$1" in
     --bidsdir)
       BIDSdir=$2
@@ -61,6 +71,10 @@ while [ "$1" != "" ]; do
         ;;
     --subjs)
         subjs=$2
+        shift
+        ;;
+    --group)
+        group=1
         shift
         ;;
     --ext)
@@ -93,13 +107,18 @@ fi
 
 
 # input variable summary
-echo "input BIDS directory =" $BIDSdir
+echo "input BIDS directory =" ${BIDSdir}
 echo "output directory / SUBJECT_DIR = $outputdir"
 echo "site = $site"
 echo " "
+if [ group == 1 ]; then
+echo "... running pipeline with extraction of group stats/plots "
+else
+echo "... running pipeline without extracting group stats/plots "
+fi
 echo "options = "
 echo "extension of T1w file = $ext"
-if [ ! -z $subjs ]; then
+if [ ! -z ${subjs} ]; then
 echo "--subj flag set; running script on subset of subjects in BIDS directory"
 else
 echo "running script on all subjects in BIDS directory"
@@ -173,7 +192,24 @@ function ctrl_c() {
 #trap "kill 0" EXIT
 
 # start loop
+num_jobs="\j"  # The prompt escape for number of jobs currently running
 for subj in ${subjects}; do
+
+# check existence of files in output folder
+if [ -d ${outputdir}/${subj} ] \
+&& [ -f ${outputdir}/${subj}/stats/thalamic-nuclei.lh.${vers}.T1.stats ] \
+&& [ -f ${outputdir}/${subj}/stats/thalamic-nuclei.rh.${vers}.T1.stats ] \
+&& [ -f ${outputdir}/${subj}/scripts/recon-all.done ] \
+&& [ -f ${outputdir}/${subj}/mri/wmparc.mgz ] \
+&& [ -f ${outputdir}/${subj}/mri/thalwm.nii.gz ] \
+&& [ -f ${outputdir}/${subj}/mri/thalcsf.nii.gz ] \
+&& [ $(cat ${outputdir}/${subj}/QC/${subj}_CSF_overlap.txt | wc -l) -ge 1 ] \
+&& [ $(cat ${outputdir}/${subj}/QC/${subj}_WM_overlap.txt | wc -l) -ge 1 ]; then
+################################################################################
+
+while (( ${num_jobs@P} >= ${NSUBJ} )); do
+wait -n
+done
 
 echo ${subj}
 
@@ -196,18 +232,11 @@ fi
 
 if [ ! -f ${outputdir}/vol+QA/${base}_noneck_overlay.png ]; then
 echo "check crop quality"
-overlay 0 1 ${T1w} -A ${base}_noneck 0 1000 ${base}_overlay
-slicer ${base}_overlay -a ${outputdir}/vol+QA/${base}_noneck_overlay.png
+slicer ${T1w} ${base}_noneck ${outputdir}/vol+QA/${base}_noneck_QA.png
 #convert ${outputdir}/${base}_noneck_overlay.ppm ${outputdir}/${base}_noneck_overlay.png
-rm ${base}_overlay.nii.gz
 fi
 
 T1w_noneck=${base}_noneck.nii.gz
-
-
-# counter
-j=$[$j+1]
-
 
 if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
 && [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ]; then
@@ -216,12 +245,13 @@ if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
     echo "something may have gone wrong during a previous run of this script"
     echo "${outputdir}/${subj}/scripts/IsRunning.lh+rh exists"
     while true; do
-        read -p "Do you wish to delete this file now and continue (Y/N)? " yn
+        read -t 30 -p "Do you wish to delete this file now and continue (Y/N)? " yn
         case $yn in
-            [Yy]* ) echo "removed file and continueing ..." ; \
+            [Yy]* ) echo "removed file and continuing ..." ; \
             rm ${outputdir}/${subj}/scripts/IsRunning.lh+rh; break;;
             [Nn]* ) echo "aborting script" ; sleep 1; exit;;
-            * ) echo "Please answer yes or no.";;
+            * ) echo "time out reached; removed file and continuing ..." ; \
+            rm ${outputdir}/${subj}/scripts/IsRunning.lh+rh; break;;
         esac
     done
 
@@ -239,6 +269,13 @@ if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
         sleep 4
         (recon-all -subjid ${subj} -all -openmp ${NCORES} -subfields ; \
         /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_recon.log &
+
+		# to keep jobs slightly out of sync
+		if [[ ${NSUBJ} -gt 1 ]]; then
+			sleep $[ $RANDOM % 90 ]
+		fi
+
+
       else
         if [ -d ${outputdir}/${subj} ]; then
         echo "deleting previous run and restarting"
@@ -247,6 +284,12 @@ if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
         echo "starting recon-all -all"
         (recon-all -subjid ${subj} -i ${T1w_noneck} -all -openmp ${NCORES} -subfields ; \
         /neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_recon.log &
+
+		# to keep jobs slightly out of sync
+		if [[ ${NSUBJ} -gt 1 ]]; then
+			sleep $[ $RANDOM % 90 ]
+		fi
+
       fi
 
 
@@ -255,43 +298,61 @@ elif [ ! -f ${outputdir}/${subj}/stats/thalamic-nuclei.lh.${vers}.T1.stats ] \
 echo "recon-all already completed"
 echo "continue to thalamus subsegmentation"
 
-(recon-all -subjid ${subj} -subfields -openmp ${NCORES} ; \
-/neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_thalseg.log &
+		(recon-all -subjid ${subj} -subfields -openmp ${NCORES} ; \
+		/neurodocker/combine_subnuclei.sh ${outputdir} ${subj}) | tee ${outputdir}/${subj}_thalseg.log &
+
+		# to keep jobs slightly out of sync
+		if [[ ${NSUBJ} -gt 1 ]]; then
+			sleep $[ $RANDOM % 90 ]
+		fi
 
 elif [ ! -f ${outputdir}/${subj}/mri/thalwm.nii.gz ] \
 || [ ! -f ${outputdir}/${subj}/mri/thalcsf.nii.gz ] \
 || [ $(cat ${outputdir}/${subj}/QC/${subj}_CSF_overlap.txt | wc -l) -lt 1 ] \
 || [ $(cat ${outputdir}/${subj}/QC/${subj}_WM_overlap.txt | wc -l) -lt 1 ]; then
 
-echo "recon-all already completed"
-echo " thalamus subsegmentation already completed"
-echo "continue with QA steps"
+		echo "recon-all already completed"
+		echo " thalamus subsegmentation already completed"
+		echo "continue with QA steps"
 
-/neurodocker/combine_subnuclei.sh ${outputdir} ${subj} | tee ${outputdir}/${subj}_QAsteps.log &
+		/neurodocker/combine_subnuclei.sh ${outputdir} ${subj} | tee ${outputdir}/${subj}_QAsteps.log &
+
+		# to keep jobs slightly out of sync
+		if [[ ${NSUBJ} -gt 1 ]]; then
+			sleep $[ $RANDOM % 90 ]
+		fi
 
 else
-  echo "recon-all already completed"
-  echo " thalamus subsegmentation already completed"
-  echo "single subject QA steps already completed"
-  echo " continue with the next subject"
+		echo "recon-all already completed"
+		echo " thalamus subsegmentation already completed"
+		echo "single subject QA steps already completed"
+		echo " continue with the next subject"
 
 fi
 
-# to keep jobs slightly out of sync
-if [[ ${NSUBJ} -gt 1 ]]; then
-sleep $[ $RANDOM % 120 ]
-fi
 
-
-# trick to keep script from exceeding number of simultaneous processes
-if [[ ${j} == ${NSUBJ} ]]; then
-  wait
-  j=0
+else
+    echo "processing steps already finished for ${subj}"
+    echo "continue with the next subject"
 fi
 
 
 
 done
+################### END SUBJECT SPECIFIC PART ###################
+
+################### START GROUP-SPECIFIC PART ###################
+
+child_count=$(($(pgrep --parent $$ | wc -l) - 1))
+echo "there are still ${child_count} active processes. waiting ..."
+# wait untill all processes have finished
+wait
+
+if [ group == 1 ]; then
+  echo "creating group stats and figures"
+# list number of child processes
+
+
 
 # extract segmentation values
 cd ${outputdir}
@@ -371,3 +432,11 @@ echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
 # run python script to extract volumes and make plots for QA
 /neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ENIGMA_thal_${site} --plotbase ENIGMA_thal_${site} --thalv v12
+
+else
+
+  echo "done processing all ${numsubj} subjects"
+  echo "output has been saved to ${outputdir}"
+  echo "--group flag was not set"
+  echo "rerun script with --group to create group stats and figures"
+fi

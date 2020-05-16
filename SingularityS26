@@ -14,7 +14,11 @@ From: centos:7
 %post
 mkdir -p /neurodocker
 
+<<<<<<< Updated upstream
 mv /mainscript_v6.sh /neurodocker/mainscript.sh
+=======
+mv /mainscript_v9.sh /neurodocker/mainscript.sh
+>>>>>>> Stashed changes
 mv /combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
 mv /extract_vols_plot.py /neurodocker/extract_vols_plot.py
 mv /create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh
@@ -218,7 +222,7 @@ export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages
 
 %files
 license.txt
-mainscript_v8.sh
+mainscript_v9.sh
 combine_subnuclei_v3.sh
 extract_vols_plot.py
 create_webpage_thalsubs.sh
