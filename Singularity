@@ -75,7 +75,7 @@ rm -rf /var/cache/yum/*
 echo "Downloading FreeSurfer ..."
 mkdir -p /opt/freesurfer7
 chmod -R 777 /opt/freesurfer7 && chmod a+s /opt/freesurfer7
-curl -fsSL --retry 5 https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.0.0/freesurfer-linux-centos7_x86_64-7.0.0.tar.gz \
+curl -fsSL --retry 5 https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.0/freesurfer-linux-centos7_x86_64-7.1.0.tar.gz \
 | tar -xz -C /opt/freesurfer7 --strip-components 1 \
   --exclude='freesurfer/average/mult-comp-cor' \
   --exclude='freesurfer/average/BrainstemSS' \
@@ -179,7 +179,7 @@ echo '{
 \n    [
 \n      "freesurfer",
 \n      {
-\n        "version": "7.0.0"
+\n        "version": "7.1.0"
 \n      }
 \n    ],
 \n    [

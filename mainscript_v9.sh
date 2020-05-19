@@ -19,26 +19,26 @@ export FSLOUTPUTTYPE=NIFTI_GZ
 Usage() {
     cat <<EOF
 
-    echo "(C) C.Vriend - 1/1/2020"
-    echo "code written as part of ENIGMA OCD for subsegmentation of the thalamus"
-    echo "script assumes that images are organized according to BIDS format"
-    echo ""
-    echo "Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ..."
-    echo "--bidsdir /path/to/inputfiles"
-    echo "--outdir /path/to/output directory"
-    echo "--site name of site (self chosen)"
-    echo ""
-    echo ""
-    echo "--group: extract and plot volumes for entire group for QA and stats "
-    echo ""
+    (C) C.Vriend - 5/16/2020
+    code written as part of ENIGMA OCD for subsegmentation of the thalamus
+    script assumes that images are organized according to BIDS format
 
-    echo "other options:"
-    echo "--subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)"
-    echo " "
-    echo "--ext: extension of T1w image (default = nii.gz)"
-    echo "--omp-nthreads: number of cores to use for each subject (default = 1)"
-    echo "--nthreads: number of subjects to process simultaneously (default = 1)"
-    echo ""
+    Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ...
+    Obligatory:
+    --bidsdir /path/to/inputfiles
+    --outdir /path/to/output directory
+    --site name of site (self chosen)
+
+    Optional:
+    --group: extract and plot volumes for entire group for QA and stats
+
+    other options:
+    --subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)
+             this file needs to be stored in BIDSdir
+    --ext: extension of T1w image (default = nii.gz)
+    --omp-nthreads: number of cores to use for each subject (default = 1)
+    --nthreads: number of subjects to process simultaneously (default = 1)
+
 
 EOF
     exit 1
@@ -205,7 +205,12 @@ if [ -d ${outputdir}/${subj} ] \
 && [ -f ${outputdir}/${subj}/mri/thalcsf.nii.gz ] \
 && [ $(cat ${outputdir}/${subj}/QC/${subj}_CSF_overlap.txt | wc -l) -ge 1 ] \
 && [ $(cat ${outputdir}/${subj}/QC/${subj}_WM_overlap.txt | wc -l) -ge 1 ]; then
+
+echo "processing steps already finished for ${subj}"
+echo "continue with the next subject"
 ################################################################################
+
+else
 
 while (( ${num_jobs@P} >= ${NSUBJ} )); do
 wait -n
@@ -331,11 +336,8 @@ else
 fi
 
 
-else
-    echo "processing steps already finished for ${subj}"
-    echo "continue with the next subject"
 fi
-
+# files exist
 
 
 done
