@@ -20,7 +20,8 @@ Usage() {
     cat <<EOF
 
     (C) C.Vriend - 5/16/2020
-    code written as part of ENIGMA OCD for subsegmentation of the thalamus
+    code written for ENIGMA OCD for subsegmentation of the thalamus using FreeSurfer 7.0.1
+    and other open-source software
     script assumes that images are organized according to BIDS format
 
     Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ...
@@ -212,7 +213,7 @@ echo "continue with the next subject"
 
 else
 
-while (( ${num_jobs@P} >= ${NSUBJ} )); do
+while (( ${num_jobs@P} >= NSUBJ )); do
 wait -n
 done
 
