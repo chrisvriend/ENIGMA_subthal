@@ -52,7 +52,6 @@ ext=nii.gz
 #mode=full
 NCORES=1
 NSUBJ=1
-
 # different versions of Thalamic subnuclei exists: v10 and v12.
 vers=v12
 
@@ -213,9 +212,13 @@ echo "continue with the next subject"
 
 else
 
-while (( ${num_jobs@P} >= NSUBJ )); do
-wait -n
-done
+
+  # allow only to execute $N jobs in parallel
+   if [[ $(jobs -r -p | wc -l) -gt $N ]]; then
+       # wait only for first job
+       wait -n
+   fi
+
 
 echo ${subj}
 
@@ -244,8 +247,9 @@ fi
 
 T1w_noneck=${base}_noneck.nii.gz
 
-if [ ! -f ${outputdir}/${subj}/scripts/recon-all.done ] \
-&& [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ]; then
+if [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ] \
+|| [ ! -f ${outputdir}/${subj}/mri/norm.mgz ] \
+|| [ ! -f ${outputdir}/${subj}/mri/transforms/talairach.xfm ]; then
 
   if [ -f ${outputdir}/${subj}/scripts/IsRunning.lh+rh ]; then
     echo "something may have gone wrong during a previous run of this script"
@@ -342,14 +346,14 @@ fi
 
 
 done
-################### END SUBJECT SPECIFIC PART ###################
-
-################### START GROUP-SPECIFIC PART ###################
 
 child_count=$(($(pgrep --parent $$ | wc -l) - 1))
 echo "there are still ${child_count} active processes. waiting ..."
 # wait untill all processes have finished
 wait
+################### END SUBJECT SPECIFIC PART ###################
+
+################### START GROUP-SPECIFIC PART ###################
 
 if [ group == 1 ]; then
   echo "creating group stats and figures"
