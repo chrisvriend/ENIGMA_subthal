@@ -75,7 +75,6 @@ while [ _$1 != _ ] ; do
         ;;
     --group)
         group=1
-        shift
         ;;
     --ext)
 			ext=$2
@@ -111,7 +110,7 @@ echo "input BIDS directory =" ${BIDSdir}
 echo "output directory / SUBJECT_DIR = $outputdir"
 echo "site = $site"
 echo " "
-if [ group == 1 ]; then
+if [[ ${group} -eq 1 ]]; then
 echo "... running pipeline with extraction of group stats/plots "
 else
 echo "... running pipeline without extracting group stats/plots "
@@ -212,12 +211,15 @@ echo "continue with the next subject"
 
 else
 
+  while (( ${num_jobs@P} >= NSUBJ )); do
+  wait -n
+  done
 
   # allow only to execute $N jobs in parallel
-   if [[ $(jobs -r -p | wc -l) -gt $N ]]; then
+  # if [[ $(jobs -r -p | wc -l) -gt $N ]]; then
        # wait only for first job
-       wait -n
-   fi
+#       wait -n
+#   fi
 
 
 echo ${subj}
@@ -259,14 +261,21 @@ if [ ! -f ${outputdir}/${subj}/mri/wmparc.mgz ] \
         case $yn in
             [Yy]* ) echo "removed file and continuing ..." ; \
             rm ${outputdir}/${subj}/scripts/IsRunning.lh+rh; break;;
-            [Nn]* ) echo "aborting script" ; sleep 1; exit;;
+            [Nn]* ) flag=1; break;;
             * ) echo "time out reached; removed file and continuing ..." ; \
             rm ${outputdir}/${subj}/scripts/IsRunning.lh+rh; break;;
         esac
     done
 
   fi
-
+      # abort this iteration
+      if [[ ${flag} -eq 1 ]]; then
+      echo "aborting script for ${subj}"
+      echo "but this subject will need follow-up!"
+      sleep 2
+      unset flag
+      continue
+      fi
 
       if [ -d ${outputdir}/${subj} ] \
       && [ -f ${outputdir}/${subj}/mri/orig/001.mgz ] ; then
@@ -348,7 +357,10 @@ fi
 done
 
 child_count=$(($(pgrep --parent $$ | wc -l) - 1))
+
+if [[ ${child_count} -gt 0 ]]; then
 echo "there are still ${child_count} active processes. waiting ..."
+fi
 # wait untill all processes have finished
 wait
 ################### END SUBJECT SPECIFIC PART ###################

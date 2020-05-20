@@ -9,21 +9,24 @@
 #     https://github.com/kaczmarj/neurodocker
 
 Bootstrap: docker
-From: centos:7
+From: ubuntu:18.04
 
 %post
 export ND_ENTRYPOINT="/neurodocker/mainscript.sh"
-yum install -y -q \
+apt-get update -qq
+apt-get install -y -q --no-install-recommends \
+    apt-utils \
     bzip2 \
     ca-certificates \
     curl \
-    localedef \
-    uptime \
+    locales \
     time \
     unzip
-yum clean packages
-rm -rf /var/cache/yum/*
-localedef -i en_US -f UTF-8 en_US.UTF-8
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+dpkg-reconfigure --frontend=noninteractive locales
+update-locale LANG="en_US.UTF-8"
 chmod 777 /opt && chmod a+s /opt
 mkdir -p /neurodocker
 if [ ! -f "$ND_ENTRYPOINT" ]; then
@@ -63,15 +66,19 @@ bash -c "source activate neuro
 rm -rf ~/.cache/pip/*
 sync
 
-yum install -y -q \
+
+apt-get update -qq
+apt-get install -y -q --no-install-recommends \
     bc \
-    libXmu \
-    libXt \
-    libgomp \
+    libgomp1 \
+    libxmu6 \
+    libxt6 \
     perl \
     tcsh
-yum clean packages
-rm -rf /var/cache/yum/*
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+
+
 echo "Downloading FreeSurfer ..."
 mkdir -p /opt/freesurfer7
 chmod -R 777 /opt/freesurfer7 && chmod a+s /opt/freesurfer7
@@ -100,36 +107,34 @@ curl -fsSL --retry 5 https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.
 # modify recon-all to only subsegment the thalamus
 sed -i 's/set scrlist = (segmentHA_T1.sh segmentThalamicNuclei.sh segmentBS.sh)/set scrlist =  (segmentThalamicNuclei.sh)/g' /opt/freesurfer7/bin/recon-all
 
-
-
-yum install -y -q \
-    bc \
+apt-get update -qq
+apt-get install -y -q --no-install-recommends \
+    dc \
     file \
-    libGL \
-    libGLU \
-    libICE \
-    libSM \
-    libX11 \
-    libXcursor \
-    libXext \
-    libXft \
-    libXinerama \
-    libXrandr \
-    libXt \
-    libgomp \
-    libjpeg \
-    libmng \
-    libpng12 \
+    libfontconfig1 \
+    libfreetype6 \
+    libgl1-mesa-dev \
+    libgl1-mesa-dri \
+    libglu1-mesa-dev \
+    libice6 \
+    libncurses5 \
+    libxext6 \
+    libxpm-dev \
+    libxcursor1 \
+    libxft2 \
+    libxinerama1 \
+    libxrandr2 \
+    libxrender1 \
     sudo \
     wget
-yum clean packages
-rm -rf /var/cache/yum/*
+apt-get clean
+rm -rf /var/lib/apt/lists/*
 
 echo "Downloading FSL ..."
 mkdir -p /opt/fsl-5.0.10
 curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-5.0.10-centos6_64.tar.gz \
 | tar -xz -C /opt/fsl-5.0.10 --strip-components 1
-sed -i '$iecho Some packages in this Docker container are non-free' $ND_ENTRYPOINT
+sed -i '$iecho Some packages in this container are non-free' $ND_ENTRYPOINT
 sed -i '$iecho If you are considering commercial use of this container, please consult the relevant license:' $ND_ENTRYPOINT
 sed -i '$iecho https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence' $ND_ENTRYPOINT
 sed -i '$isource $FSLDIR/etc/fslconf/fsl.sh' $ND_ENTRYPOINT
@@ -137,17 +142,7 @@ echo "Installing FSL conda environment ..."
 bash /opt/fsl-5.0.10/etc/fslconf/fslpython_install.sh -f /opt/fsl-5.0.10
 
 
-
 export TMPDIR="$(mktemp -d)"
-yum install -y -q \
-    bc \
-    libncurses5 \
-    libxext6 \
-    libxmu6 \
-    libxpm-dev \
-    libxt6
-    yum clean packages
-    rm -rf /var/cache/yum/*
 
 echo "Downloading MATLAB Compiler Runtime ..."
 curl -fsSL --retry 5 -o "$TMPDIR/mcr.zip" https://ssd.mathworks.com/supportfiles/downloads/R2014b/deployment_files/R2014b/installers/glnxa64/MCR_R2014b_glnxa64_installer.zip
@@ -163,11 +158,11 @@ chmod u+x /neurodocker/extract_vols_plot.py
 chmod u+x /neurodocker/create_webpage_thalsubs.sh
 
 echo '{
-\n  "pkg_manager": "yum",
+\n  "pkg_manager": "apt",
 \n  "instructions": [
 \n    [
 \n      "base",
-\n      "centos:7"
+\n      "Ubuntu:18.04"
 \n    ],
 \n    [
 \n      "_header",
