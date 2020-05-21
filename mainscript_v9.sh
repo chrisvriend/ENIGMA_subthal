@@ -243,7 +243,7 @@ fi
 
 if [ ! -f ${outputdir}/vol+QA/${base}_noneck_overlay.png ]; then
 echo "check crop quality"
-slicer ${T1w} ${base}_noneck ${outputdir}/vol+QA/${base}_noneck_QA.png
+slicer ${T1w} ${base}_noneck -a ${outputdir}/vol+QA/${base}_noneck_QA.png
 #convert ${outputdir}/${base}_noneck_overlay.ppm ${outputdir}/${base}_noneck_overlay.png
 fi
 
