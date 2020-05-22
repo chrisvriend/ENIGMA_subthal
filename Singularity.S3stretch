@@ -9,7 +9,7 @@
 #     https://github.com/kaczmarj/neurodocker
 
 Bootstrap: docker
-From: ubuntu:18.04
+From: debian:stretch
 
 %post
 export ND_ENTRYPOINT="/neurodocker/mainscript.sh"
