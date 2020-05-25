@@ -26,19 +26,19 @@ Usage() {
 
     Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ...
     Obligatory:
-    --bidsdir /path/to/inputfiles
-    --outdir /path/to/output directory
-    --site name of site (self chosen)
+    -bidsdir /path/to/inputfiles
+    -outdir /path/to/output directory
+    -site name of site (self chosen)
 
     Optional:
-    --group: extract and plot volumes for entire group for QA and stats
+    -group: extract and plot volumes for entire group for QA and stats
 
     other options:
-    --subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)
+    -subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)
              this file needs to be stored in BIDSdir
-    --ext: extension of T1w image (default = nii.gz)
-    --omp-nthreads: number of cores to use for each subject (default = 1)
-    --nthreads: number of subjects to process simultaneously (default = 1)
+    -ext: extension of T1w image (default = nii.gz)
+    -omp-nthreads: number of cores to use for each subject (default = 1)
+    -nthreads: number of subjects to process simultaneously (default = 1)
 
 
 EOF
@@ -57,34 +57,34 @@ vers=v12
 
 while [ _$1 != _ ] ; do
 	case "$1" in
-    --bidsdir)
+    -bidsdir)
       BIDSdir=$2
       shift
       ;;
-    --outdir)
+    -outdir)
       outputdir=$2
       shift
       ;;
-    --site)
+    -site)
         site=$2
         shift
         ;;
-    --subjs)
+    -subjs)
         subjs=$2
         shift
         ;;
-    --group)
+    -group)
         group=1
         ;;
-    --ext)
+    -ext)
 			ext=$2
 			shift
 			;;
-    --omp-nthreads)
+    -omp-nthreads)
 			NCORES=$2
 			shift
 			;;
-		--nthreads)
+		-nthreads)
 			NSUBJ=$2
 			shift
 			;;
@@ -96,9 +96,9 @@ done
 
 # input variable check 1
 if [ -z $BIDSdir ] || [ -z $outputdir ] || [ -z $site ]; then
-echo "you have to specify (at least) an input directory (--bidsdir /path/to/files)"
-echo ", output directory (--outdir /path/to/output)"
-echo "and a name for your site (--site name (self chosen))"
+echo "you have to specify (at least) an input directory (-bidsdir /path/to/files)"
+echo ", output directory (-outdir /path/to/output)"
+echo "and a name for your site (-site name (self chosen))"
 
 exit 1
 fi
@@ -118,7 +118,7 @@ fi
 echo "options = "
 echo "extension of T1w file = $ext"
 if [ ! -z ${subjs} ]; then
-echo "--subj flag set; running script on subset of subjects in BIDS directory"
+echo "-subj flag set; running script on subset of subjects in BIDS directory"
 else
 echo "running script on all subjects in BIDS directory"
 fi
@@ -367,19 +367,16 @@ wait
 
 ################### START GROUP-SPECIFIC PART ###################
 
-if [ group == 1 ]; then
+if [[ ${group} -eq 1 ]]; then
   echo "creating group stats and figures"
-# list number of child processes
 
-
-
-# extract segmentation values
 cd ${outputdir}
 
 ls -d sub-*/ > temp.txt
 subjects=$(sed 's:/.*::' temp.txt)
 rm temp.txt
 
+# extract segmentation values
 for subj in ${subjects}; do
 
 if [ ! -f ${subj}/stats/aseg.stats ]; then
@@ -456,6 +453,6 @@ else
 
   echo "done processing all ${numsubj} subjects"
   echo "output has been saved to ${outputdir}"
-  echo "--group flag was not set"
-  echo "rerun script with --group to create group stats and figures"
+  echo "-group flag was not set"
+  echo "rerun script with -group to create group stats and figures"
 fi
