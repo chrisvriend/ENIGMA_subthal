@@ -20,11 +20,11 @@ Usage() {
     cat <<EOF
 
     (C) C.Vriend - 5/16/2020
-    code written for ENIGMA OCD for subsegmentation of the thalamus using FreeSurfer 7.0.1
+    code written for ENIGMA OCD for subsegmentation of the thalamus using FreeSurfer 7.1.0
     and other open-source software
     script assumes that images are organized according to BIDS format
 
-    Usage: --bidsdir <BIDSdir> --outdir <SUBJECTS_DIR> --site <site name> (--group) [options] ...
+    Usage: -bidsdir <BIDSdir> -outdir <SUBJECTS_DIR> -site <site name> (-group) [options] ...
     Obligatory:
     -bidsdir /path/to/inputfiles
     -outdir /path/to/output directory
@@ -376,6 +376,9 @@ ls -d sub-*/ > temp.txt
 subjects=$(sed 's:/.*::' temp.txt)
 rm temp.txt
 
+rm -f ${outputdir}/vol+QA/brainmgzs.txt
+rm -f ${outputdir}/vol+QA/thalsegmgzs.txt
+
 # extract segmentation values
 for subj in ${subjects}; do
 
@@ -420,10 +423,43 @@ if [ ! -f ${subj}/QC/${subj}_CSF_overlap.txt ]; then
 
 fi
 
+# create list of brain mgz / ThalamicNuclei.v12.T1.mgz for concatenation
+if [ ! -f ${subj}/mri/brain.mgz ]; then
+  echo "brain.mgz does not exist for ${subj} in the FreeSurfer mri folder"
+  echo "this file is necessary for quality inspection"
+  echo " "
+  echo "rerun the script for this subject or remove the folder from the output directory ="
+  echo "${outputdir}"
+  echo " "
+  echo "exiting the program"
+  sleep 1
+  exit
+else
+echo ${subj}/mri/brain.mgz >> ${outputdir}/vol+QA/brainmgzs.txt
+fi
+
+if [ ! -f ${subj}/mri/ThalamicNuclei.v12.T1.mgz ]; then
+ echo "ThalamicNuclei.v12.T1.mgz does not exist for ${subj} in the FreeSurfer mri folder"
+ echo "this file is necessary for quality inspection"
+ echo " "
+ echo "rerun the script for this subject or remove the folder from the output directory ="
+ echo "${outputdir}"
+ echo " "
+ echo "exiting the program"
+ sleep 1
+ exit
+else
+echo ${subj}/mri/ThalamicNuclei.v12.T1.mgz >> ${outputdir}/vol+QA/thalsegmgzs.txt
+fi
+
 done
 
+echo "concatenate Iglesias thalamus segmentation files  "
+mri_concat --i `cat ${outputdir}/vol+QA/thalsegmgzs.txt` --o ${outputdir}/vol+QA/${site}_thalsegs.mgz
+echo "concatenate brain segmentation files  "
+mri_concat --i `cat ${outputdir}/vol+QA/brainmgzs.txt` --o ${outputdir}/vol+QA/${site}_brainsegs.mgz
 
-echo "extracting ICV and Freesurfer native native thalamus volume "
+echo "extracting ICV and Freesurfer native thalamus volume "
 asegstats2table --subjects ${subjects} --tablefile ${outputdir}/vol+QA/allppn_asegstats.txt
 
 echo "extracting WM and CSF overlap with Iglesias thalamus segmentation "
@@ -441,8 +477,6 @@ done
 # make webpage of thalamus subsegmentations
 echo "creating webpage of thalamic subsegmentations for visual QC"
 /neurodocker/create_webpage_thalsubs.sh ${outputdir}
-
-
 
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
