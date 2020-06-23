@@ -64,7 +64,7 @@ bash -c "source activate neuro
   pip install --no-cache-dir  \
       "ptitprince" \
       "nilearn" \
-      "plotly"
+      "plotly""
 rm -rf ~/.cache/pip/*
 sync
 
