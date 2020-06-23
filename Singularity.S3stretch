@@ -207,6 +207,8 @@ mainscript_v9.sh /neurodocker/mainscript.sh
 combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
 extract_vols_plot.py /neurodocker/extract_vols_plot.py
 create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh
+QA_thalseg_v2.sh /neurodocker/QA_thalseg.sh
+thalseg2html.py /neurodocker/thalseg2html.py
 
 
 %runscript

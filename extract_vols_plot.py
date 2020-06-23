@@ -3,7 +3,7 @@
 """
 Created on Wed Mar 25 13:01:10 2020
 
-@author: Chris Vriend, Jikke Boelens Keun, Eva van Heessen.
+@author: Chris Vriend, Jikke Boelens Keun, Eva van Heese.
 """
 
 import pandas as pd

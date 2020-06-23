@@ -18,6 +18,8 @@ mv /mainscript_v9.sh /neurodocker/mainscript.sh
 mv /combine_subnuclei_v3.sh /neurodocker/combine_subnuclei.sh
 mv /extract_vols_plot.py /neurodocker/extract_vols_plot.py
 mv /create_webpage_thalsubs.sh /neurodocker/create_webpage_thalsubs.sh
+mv /QA_thalseg_v2.sh /neurodocker/QA_thalseg.sh
+mv /thalseg2html.py /neurodocker/thalseg2html.py
 
 
 export ND_ENTRYPOINT="/neurodocker/mainscript.sh"
@@ -216,6 +218,8 @@ mainscript_v9.sh
 combine_subnuclei_v3.sh
 extract_vols_plot.py
 create_webpage_thalsubs.sh
+QA_thalseg_v2.sh
+thalseg2html.py
 
 
 %runscript
