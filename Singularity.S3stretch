@@ -63,7 +63,8 @@ sync && conda clean -y --all && sync
 bash -c "source activate neuro
   pip install --no-cache-dir  \
       "ptitprince" \
-      "plotly""
+      "nilearn" \
+      "plotly"
 rm -rf ~/.cache/pip/*
 sync
 
