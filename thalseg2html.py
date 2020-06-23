@@ -1,4 +1,5 @@
-#!/usr/bin/python3.6
+#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 
 """
@@ -46,9 +47,9 @@ view=plotting.view_img(thal,
 html1=view.get_standalone()
 html1=html1.replace('width="600"','width="2400"')
 html1=html1.replace('height="240"','width="960"')
-                     
+
 # make figure of thalamic contours
-display = plotting.plot_anat(brain, display_mode='tiled',draw_cross=False,)                           
+display = plotting.plot_anat(brain, display_mode='tiled',draw_cross=False,)
 display.add_contours(thal,alpha=0.5,levels=[0.5],colors='r',linewidths=0.5)
 
 display.savefig(output + '.png',dpi=300)
@@ -70,8 +71,3 @@ htmlfull=htmlbase + html1 + img_tag + htmlend
 # Write HTML String to file.html
 with open(output + ".html", "w") as file:
     file.write(htmlfull)
-    
-
-
-
-
