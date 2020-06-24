@@ -24,11 +24,11 @@ Usage() {
     and other open-source software
     script assumes that images are organized according to BIDS format
 
-    Usage: -bidsdir <BIDSdir> -outdir <SUBJECTS_DIR> -site <site name> (-group) [options] ...
+    Usage: -bidsdir <BIDSdir> -outdir <SUBJECTS_DIR> -sample <sample name> (-group) [options] ...
     Obligatory:
     -bidsdir /path/to/inputfiles
     -outdir /path/to/output directory
-    -site name of site (self chosen)
+    -sample name of sample (self chosen)
 
     Optional:
     -group: extract and plot volumes for entire group for QA and stats
@@ -65,8 +65,8 @@ while [ _$1 != _ ] ; do
       outputdir=$2
       shift
       ;;
-    -site)
-        site=$2
+    -sample)
+        sample=$2
         shift
         ;;
     -subjs)
@@ -95,10 +95,10 @@ while [ _$1 != _ ] ; do
 done
 
 # input variable check 1
-if [ -z $BIDSdir ] || [ -z $outputdir ] || [ -z $site ]; then
+if [ -z $BIDSdir ] || [ -z $outputdir ] || [ -z $sample ]; then
 echo "you have to specify (at least) an input directory (-bidsdir /path/to/files)"
 echo ", output directory (-outdir /path/to/output)"
-echo "and a name for your site (-site name (self chosen))"
+echo "and a name for your sample (-sample name (self chosen))"
 
 exit 1
 fi
@@ -108,7 +108,7 @@ fi
 # input variable summary
 echo "input BIDS directory =" ${BIDSdir}
 echo "output directory / SUBJECT_DIR = $outputdir"
-echo "site = $site"
+echo "sample = $sample"
 echo " "
 if [[ ${group} -eq 1 ]]; then
 echo "... running pipeline with extraction of group stats/plots "
@@ -455,9 +455,9 @@ fi
 done
 
 echo "concatenate Iglesias thalamus segmentation files  "
-mri_concat --i `cat ${outputdir}/vol+QA/thalsegmgzs.txt` --o ${outputdir}/vol+QA/${site}_thalsegs.mgz
+mri_concat --i `cat ${outputdir}/vol+QA/thalsegmgzs.txt` --o ${outputdir}/vol+QA/${sample}_thalsegs.mgz
 echo "concatenate brain segmentation files  "
-mri_concat --i `cat ${outputdir}/vol+QA/brainmgzs.txt` --o ${outputdir}/vol+QA/${site}_brainsegs.mgz
+mri_concat --i `cat ${outputdir}/vol+QA/brainmgzs.txt` --o ${outputdir}/vol+QA/${sample}_brainsegs.mgz
 
 echo "extracting ICV and Freesurfer native thalamus volume "
 asegstats2table --subjects ${subjects} --tablefile ${outputdir}/vol+QA/allppn_asegstats.txt
@@ -481,7 +481,7 @@ echo "creating webpage of thalamic subsegmentations for visual QC"
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
 # run python script to extract volumes and make plots for QA
-/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ENIGMA_thal_${site} --plotbase ENIGMA_thal_${site} --thalv v12
+/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ENIGMA_thal_${sample} --plotbase ENIGMA_thal_${sample} --thalv v12
 
 else
 
