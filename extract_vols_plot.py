@@ -232,8 +232,8 @@ df_master = df_master.merge(df_LT_RT_ICV, left_index=True, right_index=True)
 df_master["diff_Right-Thal"]=df_master["Old_Right-Thal"]-df_master["whole_thalamus_rh"]
 df_master["diff_Left-Thal"]=df_master["Old_Left-Thal"]-df_master["whole_thalamus_lh"]
 
-# round volume to 4 decimals
-df_master=df_master.round(4)
+# round volume to 3 decimals
+df_master=df_master.round(3)
 
 #Save master dataframe to csv
 df_master.to_csv(os.path.join(outputdir,(outbase + '_vols.csv')), na_rep='NULL')
@@ -252,9 +252,9 @@ df_master_outliers = df_master.copy()
 
 if 'group' in df_master_outliers:
     del df_master_outliers['group']
-    
+
 if 'ICV' in df_master_outliers:
-    del df_master_outliers['ICV']  
+    del df_master_outliers['ICV']
 
 # correct for ICV
 df_master_outliers=df_master_outliers.divide(df_master['ICV'], axis = 'rows').multiply(1000000)
@@ -305,7 +305,7 @@ def getIndexes(dfObj, value):
     return listOfPos
 
 idxoutliers=np.unique(getIndexes(df_master_outliers,1))
-outliersdf=pd.DataFrame(idxoutliers,index=None).sort()
+outliersdf=pd.DataFrame(idxoutliers,index=None)
 outliersdf.to_csv(os.path.join(workdir,'outliers.txt'),header=False,index=False, sep=' ')
 
 
