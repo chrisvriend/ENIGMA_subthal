@@ -28,10 +28,10 @@ Usage() {
     Obligatory:
     -bidsdir /path/to/inputfiles
     -outdir /path/to/output directory
-    -sample name of sample (self chosen)
+    -sample name of the sample (self chosen)
 
     Optional:
-    -group: extract and plot volumes for entire group for QA and stats
+    -group: extract and plot volumes for entire group for QA and stats. this needs to be run to create csv + html files
 
     other options:
     -subjs: text file with list of subjecs that need to be run (default = run all subjects in bidsdir)
@@ -168,7 +168,7 @@ numsubj=$(echo "${subjects}" | wc -l)
 echo ".............................. "
 echo " "
 echo "there is/are ${numsubj} subject(s) in ${BIDSdir}"
-echo "running script on all "
+echo "running script on all subjects "
 
 fi
 
@@ -460,17 +460,17 @@ echo "concatenate brain segmentation files  "
 mri_concat --i `cat ${outputdir}/vol+QA/brainmgzs.txt` --o ${outputdir}/vol+QA/${sample}_brainsegs.mgz
 
 echo "extracting ICV and Freesurfer native thalamus volume "
-asegstats2table --subjects ${subjects} --tablefile ${outputdir}/vol+QA/allppn_asegstats.txt
+asegstats2table --subjects ${subjects} --tablefile ${outputdir}/vol+QA/${sample}_asegstats.txt
 
 echo "extracting WM and CSF overlap with Iglesias thalamus segmentation "
 
-rm -f ${outputdir}/vol+QA/allppn_WM_overlap.txt
-rm -f ${outputdir}/vol+QA/allppn_CSF_overlap.txt
+rm -f ${outputdir}/vol+QA/${sample}_WM_overlap.txt
+rm -f ${outputdir}/vol+QA/${sample}_CSF_overlap.txt
 
 for subj in ${subjects}; do
 
-cat ${subj}/QC/${subj}_CSF_overlap.txt >> ${outputdir}/vol+QA/allppn_CSF_overlap.txt
-cat ${subj}/QC/${subj}_WM_overlap.txt >> ${outputdir}/vol+QA/allppn_WM_overlap.txt
+cat ${subj}/QC/${subj}_CSF_overlap.txt >> ${outputdir}/vol+QA/${sample}_CSF_overlap.txt
+cat ${subj}/QC/${subj}_WM_overlap.txt >> ${outputdir}/vol+QA/${sample}_WM_overlap.txt
 
 done
 
@@ -481,12 +481,13 @@ echo "creating webpage of thalamic subsegmentations for visual QC"
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
 # run python script to extract volumes and make plots for QA
-/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ENIGMA_thal_${sample} --plotbase ENIGMA_thal_${sample} --thalv v12
+/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ${sample} --plotbase plot_${sample} --thalv v12
 
 else
 
   echo "done processing all ${numsubj} subjects"
   echo "output has been saved to ${outputdir}"
+  echo 
   echo "-group flag was not set"
   echo "rerun script with -group to create group stats and figures"
 fi

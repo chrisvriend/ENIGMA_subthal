@@ -151,7 +151,7 @@ for subj in subjdirs:
 
     # save to csv file (for individual subjects)
 
-    # define personal output directory!
+    # define personal base directory!
 
     df_thalbilat.to_csv(os.path.join(subj + '_volume_subnuclei_all' + '.csv'), na_rep='NULL')
     df_subnbilat.to_csv(os.path.join(subj + '_volume_subnuclei' + '.csv')
@@ -166,13 +166,13 @@ os.chdir(outputdir)
 
 # read txt files with WM and CSF overlap with Thalamus segmentations of entire sample
 
-WMalltxtfile='allppn_WM_overlap.txt'
-CSFalltxtfile="allppn_CSF_overlap.txt"
+WMalltxtfile=outbase + "_WM_overlap.txt"
+CSFalltxtfile=outbase + "_CSF_overlap.txt"
 
 # this one needs to be created using FS aseg2statstable
 # set SUBJECTS_DIR
 # asegstats2table --subjects `cat subjects.txt` --tablefile asegstats.txt
-asegallstatsfile="allppn_asegstats.txt"
+asegallstatsfile=outbase + "_asegstats.txt"
 
 # import the data for WM overlap with thalamus (stored in SUBJECTS_DIR)
 df_WM = pd.read_csv(WMalltxtfile, delim_whitespace=True,
@@ -232,6 +232,8 @@ df_master = df_master.merge(df_LT_RT_ICV, left_index=True, right_index=True)
 df_master["diff_Right-Thal"]=df_master["Old_Right-Thal"]-df_master["whole_thalamus_rh"]
 df_master["diff_Left-Thal"]=df_master["Old_Left-Thal"]-df_master["whole_thalamus_lh"]
 
+# round volume to 4 decimals
+df_master=df_master.round(4)
 
 #Save master dataframe to csv
 df_master.to_csv(os.path.join(outputdir,(outbase + '_vols.csv')), na_rep='NULL')
@@ -250,7 +252,12 @@ df_master_outliers = df_master.copy()
 
 if 'group' in df_master_outliers:
     del df_master_outliers['group']
+    
+if 'ICV' in df_master_outliers:
+    del df_master_outliers['ICV']  
 
+# correct for ICV
+df_master_outliers=df_master_outliers.divide(df_master['ICV'], axis = 'rows').multiply(1000000)
 
 
 # write for loop for all columns in the master_df
@@ -274,6 +281,32 @@ print(df_master_outliers.sum())
 
 df_master_outliers.to_csv(os.path.join(outputdir,(outbase + '_outliers.csv')), na_rep='NULL')
 
+
+#######################
+# OUTLIERS 2 TXT file #
+#######################
+print('saving subject IDs to outliers.txt in output directory')
+
+
+def getIndexes(dfObj, value):
+    ''' Get index positions of value in dataframe i.e. dfObj.'''
+    listOfPos = list()
+    # Get bool dataframe with True at positions where the given value exists
+    result = dfObj.isin([value])
+    # Get list of columns that contains the value
+    seriesObj = result.any()
+    columnNames = list(seriesObj[seriesObj == True].index)
+    # Iterate over list of columns and fetch the rows indexes where value exists
+    for col in columnNames:
+        rows = list(result[col][result[col] == True].index)
+        for row in rows:
+            listOfPos.append((row))
+    # Return a list of tuples indicating the positions of value in the dataframe
+    return listOfPos
+
+idxoutliers=np.unique(getIndexes(df_master_outliers,1))
+outliersdf=pd.DataFrame(idxoutliers,index=None).sort()
+outliersdf.to_csv(os.path.join(workdir,'outliers.txt'),header=False,index=False, sep=' ')
 
 
 #####################
