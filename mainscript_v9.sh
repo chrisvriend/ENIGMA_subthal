@@ -434,12 +434,10 @@ if [ ! -f ${subj}/mri/brain.mgz ]; then
   echo "exiting the program"
   sleep 1
   exit
-else
-echo ${subj}/mri/brain.mgz >> ${outputdir}/vol+QA/brainmgzs.txt
 fi
 
-if [ ! -f ${subj}/mri/ThalamicNuclei.v12.T1.mgz ]; then
- echo "ThalamicNuclei.v12.T1.mgz does not exist for ${subj} in the FreeSurfer mri folder"
+if [ ! -f ${subj}/mri/ThalamicNuclei.${vers}.T1.mgz ]; then
+ echo "ThalamicNuclei.${vers}.T1.mgz does not exist for ${subj} in the FreeSurfer mri folder"
  echo "this file is necessary for quality inspection"
  echo " "
  echo "rerun the script for this subject or remove the folder from the output directory ="
@@ -448,16 +446,9 @@ if [ ! -f ${subj}/mri/ThalamicNuclei.v12.T1.mgz ]; then
  echo "exiting the program"
  sleep 1
  exit
-else
-echo ${subj}/mri/ThalamicNuclei.v12.T1.mgz >> ${outputdir}/vol+QA/thalsegmgzs.txt
 fi
 
 done
-
-echo "concatenate Iglesias thalamus segmentation files  "
-mri_concat --i `cat ${outputdir}/vol+QA/thalsegmgzs.txt` --o ${outputdir}/vol+QA/${sample}_thalsegs.mgz
-echo "concatenate brain segmentation files  "
-mri_concat --i `cat ${outputdir}/vol+QA/brainmgzs.txt` --o ${outputdir}/vol+QA/${sample}_brainsegs.mgz
 
 echo "extracting ICV and Freesurfer native thalamus volume "
 asegstats2table --subjects ${subjects} --tablefile ${outputdir}/vol+QA/${sample}_asegstats.txt
@@ -481,13 +472,13 @@ echo "creating webpage of thalamic subsegmentations for visual QC"
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2
 # run python script to extract volumes and make plots for QA
-/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ${sample} --plotbase plot_${sample} --thalv v12
+/neurodocker/extract_vols_plot.py --workdir ${outputdir} --outdir ${outputdir}/vol+QA --outbase ${sample} --plotbase plot_${sample} --thalv ${vers}
 
 else
 
   echo "done processing all ${numsubj} subjects"
   echo "output has been saved to ${outputdir}"
-  echo 
+  echo
   echo "-group flag was not set"
   echo "rerun script with -group to create group stats and figures"
 fi
