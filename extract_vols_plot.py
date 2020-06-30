@@ -459,7 +459,7 @@ for i, ax in zip(range(len(dfs)), axes.flat):
     data=dfs[i]
     ax_al=pt.RainCloud(x = dx, y = dy,
                     data = data, palette = pal,
-                    bw = sigma,width_viol = .3, figsize = (7,5), orient = ort,ax=ax)
+                    bw = sigma,width_viol = .3, orient = ort,ax=ax)
     ax.set_title('')
     ax.set_ylabel('mm³')
     ax.set_xlabel('')
