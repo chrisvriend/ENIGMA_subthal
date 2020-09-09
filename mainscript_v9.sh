@@ -469,7 +469,7 @@ done
 echo "creating webpage of thalamic subsegmentations for visual QC"
 /neurodocker/create_webpage_thalsubs.sh ${outputdir}
 # copy reference segmentations to vol+qa
-cp /neurodocker/REFERENCE_1subj_thalQC.html REFERENCE_avg_thalQC.html ${outputdir}/vol+QA/
+cp /neurodocker/REFERENCE_1subj_thalQC.html /neurodocker/REFERENCE_avg_thalQC.html ${outputdir}/vol+QA/
 
 echo "extracting and plotting volume of thalamic subnuclei"
 sleep 2

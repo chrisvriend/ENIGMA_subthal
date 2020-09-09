@@ -64,7 +64,7 @@ conda config --system --set show_channel_urls true
 sync && conda clean -y --all && sync
 conda create -y -q --name neuro
 conda install -y -q --name neuro \
-    "python=3.7" \
+    "python=3.8" \
     "traits" \
     "numpy" \
     "pandas" \
@@ -211,8 +211,8 @@ export FSLDIR="/opt/fsl-5.0.10"
 export PATH="/opt/fsl-5.0.10/bin:$PATH"
 export CONDA_DIR="/opt/miniconda-latest"
 export PATH="/opt/miniconda-latest/bin:$PATH"
-export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH"
-export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH"
+export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.8/site-packages:$PATH"
+export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.8/site-packages:$PYTHONPATH"
 
 
 %files
