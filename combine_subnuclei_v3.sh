@@ -35,6 +35,9 @@ cd ${workdir}/${subj}/mri
 # different versions of Thalamic subnuclei exists: v10 and v12.
 vers=v12
 
+
+if [ -f ThalamicNuclei.${vers}.T1.FSvoxelSpace.mgz ]; then
+
 if [ ! -f brain.nii.gz ]; then
 mri_convert --in_type mgz --out_type nii --out_orientation RAS brain.mgz brain.nii.gz
 fi
@@ -284,3 +287,16 @@ rm thalslices_row*
 mv ${workdir}/${subj}/mri/thalslices-$label.png ${workdir}/${subj}/QC/thalslices-$label.png
 
 echo "done with ${subj}"
+
+
+else
+
+echo "Thalamic segmentation not availabe for ${subj}"
+echo "something may have gone wrong during the FreeeSurfer segmentation"
+echo "inspect:"
+echo "${workdir}/${subj}/mri"
+echo "and try to rerun"
+echo "exiting script"
+exit
+
+fi
