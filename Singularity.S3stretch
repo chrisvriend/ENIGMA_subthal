@@ -43,7 +43,7 @@ chmod -R 777 /neurodocker && chmod a+s /neurodocker
 export PATH="/opt/miniconda-latest/bin:$PATH"
 echo "Downloading Miniconda installer ..."
 conda_installer="/tmp/miniconda.sh"
-curl -fsSL --retry 5 -o "$conda_installer" https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+curl -fsSL --retry 5 -o "$conda_installer" https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh
 bash "$conda_installer" -b -p /opt/miniconda-latest
 rm -f "$conda_installer"
 conda update -y -q -nbase conda
@@ -53,7 +53,7 @@ conda config --system --set show_channel_urls true
 sync && conda clean -y --all && sync
 conda create -y -q --name neuro
 conda install -y -q --name neuro \
-    "python=3.8" \
+    "python=3.7" \
     "traits" \
     "numpy" \
     "pandas" \
@@ -198,8 +198,8 @@ export FSLDIR="/opt/fsl-5.0.10"
 export PATH="/opt/fsl-5.0.10/bin:$PATH"
 export CONDA_DIR="/opt/miniconda-latest"
 export PATH="/opt/miniconda-latest/bin:$PATH"
-export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.8/site-packages:$PATH"
-export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.8/site-packages:$PYTHONPATH"
+export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH"
+export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH"
 
 
 %files
