@@ -68,7 +68,7 @@ conda install -y -q --name neuro \
     "traits" \
     "numpy" \
     "pandas" \
-    "seaborn" \
+    "seaborn=0.10.1" \
     "matplotlib"
 sync && conda clean -y -q --all && sync
 bash -c "source activate neuro
