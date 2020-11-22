@@ -16,8 +16,8 @@ ARG DEBIAN_FRONTEND="noninteractive"
 
 ENV LANG="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8" \
-    ND_ENTRYPOINT="/neurodocker/mainscript.sh"
-RUN export ND_ENTRYPOINT="/neurodocker/mainscript.sh" \
+    ND_ENTRYPOINT="/mainscript.sh"
+RUN export ND_ENTRYPOINT="/mainscript.sh" \
     && apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            apt-utils \
@@ -46,7 +46,7 @@ RUN export ND_ENTRYPOINT="/neurodocker/mainscript.sh" \
 
 
 COPY [ "license.txt",  "/opt/freesurfer7/"]
-COPY [ "mainscript_v9.sh", "/neurodocker/mainscript.sh"]
+COPY [ "mainscript_v9.sh", "/mainscript.sh"]
 COPY [ "combine_subnuclei_v3.sh" , "/neurodocker/combine_subnuclei.sh"]
 COPY [ "extract_vols_plot.py" , "/neurodocker/extract_vols_plot.py"]
 COPY [ "create_webpage_thalsubs.sh", "/neurodocker/create_webpage_thalsubs.sh"]
@@ -55,8 +55,8 @@ COPY [ "thalseg2html.py", "/neurodocker/thalseg2html.py"]
 COPY [ "REFERENCE_1subj_thalQC.html", "/neurodocker/"]
 COPY [ "REFERENCE_avg_thalQC.html", "/neurodocker/"]
 
-RUN [“chmod”, “+x”, "/neurodocker/mainscript.sh”]
-ENTRYPOINT ["/neurodocker/mainscript.sh"]
+RUN [“chmod”, “+x”, "/mainscript.sh”]
+ENTRYPOINT ["/mainscript.sh"]
 
 
 ENV FREESURFER_HOME="/opt/freesurfer7" \
