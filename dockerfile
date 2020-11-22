@@ -44,7 +44,6 @@ RUN export ND_ENTRYPOINT="/neurodocker/mainscript.sh" \
     fi \
     && chmod -R 777 /neurodocker && chmod a+s /neurodocker
 
-ENTRYPOINT ["/neurodocker/mainscript.sh"]
 
 COPY [ "license.txt",  "/opt/freesurfer7/"]
 COPY [ "mainscript_v9.sh", "/neurodocker/mainscript.sh"]
@@ -55,6 +54,10 @@ COPY [ "QA_thalseg_v2.sh", "/neurodocker/QA_thalseg.sh"]
 COPY [ "thalseg2html.py", "/neurodocker/thalseg2html.py"]
 COPY [ "REFERENCE_1subj_thalQC.html", "/neurodocker/"]
 COPY [ "REFERENCE_avg_thalQC.html", "/neurodocker/"]
+
+RUN [“chmod”, “+x”, "/neurodocker/mainscript.sh”]
+ENTRYPOINT ["/neurodocker/mainscript.sh"]
+
 
 ENV FREESURFER_HOME="/opt/freesurfer7" \
     PATH="/opt/freesurfer7/bin:$PATH"
