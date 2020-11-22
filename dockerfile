@@ -55,7 +55,7 @@ COPY [ "thalseg2html.py", "/neurodocker/thalseg2html.py"]
 COPY [ "REFERENCE_1subj_thalQC.html", "/neurodocker/"]
 COPY [ "REFERENCE_avg_thalQC.html", "/neurodocker/"]
 
-RUN [“chmod”, “+x”, "/mainscript.sh”]
+RUN ["chmod", "+x", "/mainscript.sh"]
 ENTRYPOINT ["/mainscript.sh"]
 
 
