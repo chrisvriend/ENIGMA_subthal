@@ -36,6 +36,8 @@ RUN export ND_ENTRYPOINT="/mainscript.sh" \
     && update-locale LANG="en_US.UTF-8" \
     && chmod 777 /opt && chmod a+s /opt \
     && mkdir -p /neurodocker \
+    && mkdir -p /matlab \
+    && chmod -R 777 /matlab && chmod a+s /matlab \
     && if [ ! -f "$ND_ENTRYPOINT" ]; then \
          echo '#!/usr/bin/env bash' >> "$ND_ENTRYPOINT" \
     &&   echo 'set -e' >> "$ND_ENTRYPOINT" \
