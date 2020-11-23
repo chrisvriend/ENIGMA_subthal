@@ -192,7 +192,7 @@ RUN apt-get update -qq \
     && bash /opt/fsl-5.0.10/etc/fslconf/fslpython_install.sh -f /opt/fsl-5.0.10
 
 ENV PYTHONPATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH" \
-    && PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH"
+    PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH"
 
 
 RUN export FREESURFER_HOME="/opt/freesurfer7" \
