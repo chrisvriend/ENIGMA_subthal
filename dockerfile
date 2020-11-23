@@ -141,7 +141,7 @@ RUN export PATH="/opt/miniconda-latest/bin:$PATH" \
     && bash -c "source activate neuro \
     &&   pip install --no-cache-dir  \
              "nilearn" \
-             "ptitprince=0.2.4" \
+             "ptitprince==0.2.4" \
              "plotly"" \
     && rm -rf ~/.cache/pip/* \
     && sync
