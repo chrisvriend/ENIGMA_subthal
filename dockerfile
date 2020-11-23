@@ -199,7 +199,7 @@ RUN export FREESURFER_HOME="/opt/freesurfer7" \
     && export CONDA_DIR="/opt/miniconda-latest" \
     && export PATH="/opt/miniconda-latest/bin:$PATH" \
     && export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH" \
-    && export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH" \
+    && export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH"
 
 
 RUN echo '{ \
