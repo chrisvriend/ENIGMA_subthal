@@ -58,6 +58,12 @@ COPY [ "REFERENCE_1subj_thalQC.html", "/neurodocker/"]
 COPY [ "REFERENCE_avg_thalQC.html", "/neurodocker/"]
 
 RUN ["chmod", "+x", "/mainscript.sh"]
+RUN ["chmod", "+x", "/neurodocker/combine_subnuclei.sh"]
+RUN ["chmod", "+x", "/neurodocker/create_webpage_thalsubs.sh"]
+RUN ["chmod", "+x", "/neurodocker/QA_thalseg.sh"]
+RUN ["chmod", "+x", "/neurodocker/thalseg2html.py"]
+
+
 ENTRYPOINT ["/mainscript.sh"]
 
 
@@ -97,6 +103,16 @@ RUN apt-get update -qq \
       --exclude='freesurfer/subjects/fsaverage_sym' \
       --exclude='freesurfer/trctrain' \
       && sed -i 's/set scrlist = (segmentHA_T1.sh segmentThalamicNuclei.sh segmentBS.sh)/set scrlist =  (segmentThalamicNuclei.sh)/g' /opt/freesurfer7/bin/recon-all
+
+RUN export TMPDIR="$(mktemp -d)" \
+      && echo "Downloading MATLAB Compiler Runtime ..." \
+      && curl -fsSL --retry 5 -o "$TMPDIR/mcr.zip" https://ssd.mathworks.com/supportfiles/downloads/R2014b/deployment_files/R2014b/installers/glnxa64/MCR_R2014b_glnxa64_installer.zip \
+      && unzip -q "$TMPDIR/mcr.zip" -d "$TMPDIR/mcrtmp" \
+      && "$TMPDIR/mcrtmp/install" -destinationFolder /opt/freesurfer7/MCRv84 -mode silent -agreeToLicense yes \
+      && mv -n /opt/freesurfer7/MCRv84/v84/* /opt/freesurfer7/MCRv84/ \
+      && rm -rf "$TMPDIR" \
+      && unset TMPDIR
+
 
 
 ENV CONDA_DIR="/opt/miniconda-latest" \
