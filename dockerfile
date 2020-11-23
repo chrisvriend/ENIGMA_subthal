@@ -191,6 +191,17 @@ RUN apt-get update -qq \
     && echo "Installing FSL conda environment ..." \
     && bash /opt/fsl-5.0.10/etc/fslconf/fslpython_install.sh -f /opt/fsl-5.0.10
 
+
+RUN export FREESURFER_HOME="/opt/freesurfer7" \
+    && export PATH="/opt/freesurfer7/bin:$PATH" \
+    && export FSLDIR="/opt/fsl-5.0.10" \
+    && export PATH="/opt/fsl-5.0.10/bin:$PATH" \
+    && export CONDA_DIR="/opt/miniconda-latest" \
+    && export PATH="/opt/miniconda-latest/bin:$PATH" \
+    && export PATH="/opt/miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PATH" \
+    && export PYTHONPATH="/opt//miniconda-latest/envs/neuro/lib/python3.7/site-packages:$PYTHONPATH" \
+
+
 RUN echo '{ \
     \n  "pkg_manager": "apt", \
     \n  "instructions": [ \
