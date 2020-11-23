@@ -62,6 +62,7 @@ RUN ["chmod", "+x", "/neurodocker/combine_subnuclei.sh"]
 RUN ["chmod", "+x", "/neurodocker/create_webpage_thalsubs.sh"]
 RUN ["chmod", "+x", "/neurodocker/QA_thalseg.sh"]
 RUN ["chmod", "+x", "/neurodocker/thalseg2html.py"]
+RUN ["chmod", "+x", "/neurodocker/extract_vols_plot.py"]
 
 
 ENTRYPOINT ["/mainscript.sh"]
